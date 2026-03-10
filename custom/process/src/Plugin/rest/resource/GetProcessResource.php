@@ -6,16 +6,14 @@ namespace Drupal\process\Plugin\rest\resource;
 
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
-use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
-use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Route;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\process\Entity\Process;
 use Drupal\process\Services\ProcessService\ProcessService;
 
 /**
@@ -59,6 +57,16 @@ final class GetProcessResource extends ResourceBase {
   private readonly KeyValueStoreInterface $storage;
 
   /**
+   * The current user.
+   */
+  private AccountProxyInterface $currentUser;
+
+  /**
+   * The process service.
+   */
+  private ProcessService $processService;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(
@@ -69,7 +77,7 @@ final class GetProcessResource extends ResourceBase {
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface $currentUser,
-    ProcessService $process_service
+    ProcessService $process_service,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('get_process_resource');
@@ -93,12 +101,10 @@ final class GetProcessResource extends ResourceBase {
     );
   }
 
-
   /**
    * Responds to GET requests.
    */
-  public function get($processId): JsonResponse
-  {
+  public function get($processId): JsonResponse {
     // Check user permissions.
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
@@ -109,9 +115,12 @@ final class GetProcessResource extends ResourceBase {
       $processJsonString = $this->processService->getProcess($processId);
 
       // Return the JSON response.
-      return new JsonResponse($processJsonString, 200, [], true);
+      return new JsonResponse($processJsonString, 200, [], TRUE);
     }
-    catch (\Exception $e) {
+    catch (HttpExceptionInterface $e) {
+      throw $e;
+    }
+    catch (\Throwable $e) {
       // Log the error message.
       $this->logger->error('An error occurred while loading Process: @message', ['@message' => $e->getMessage()]);
 

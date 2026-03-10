@@ -235,7 +235,7 @@ final class DecisionSupportFile extends ContentEntityBase implements DecisionSup
   public function getLabel(): string {
     return $this->get('label')->value;
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -243,14 +243,14 @@ final class DecisionSupportFile extends ContentEntityBase implements DecisionSup
     $this->set('label', $label);
     return $this;
   }
-  
+
   /**
    * {@inheritdoc}
    */
   public function getStatus(): bool {
     return (bool) $this->get('status')->value;
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -258,14 +258,14 @@ final class DecisionSupportFile extends ContentEntityBase implements DecisionSup
     $this->set('status', $status);
     return $this;
   }
-  
+
   /**
    * {@inheritdoc}
    */
   public function getNotes(): string {
     return $this->get('notes')->value;
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -273,28 +273,28 @@ final class DecisionSupportFile extends ContentEntityBase implements DecisionSup
     $this->set('notes', $notes);
     return $this;
   }
-  
+
   /**
    * {@inheritdoc}
    */
   public function getCreatedTime(): string {
     return $this->get('created')->value;
   }
-  
+
   /**
    * {@inheritdoc}
    */
   public function getChangedTime(): string {
     return $this->get('changed')->value;
   }
-  
+
   /**
    * {@inheritdoc}
    */
-  public function getDecisionSupportId(): string {
+  public function getDecisionSupportId(): int {
     return (int) $this->get('decisionSupportId')->value;
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -302,14 +302,14 @@ final class DecisionSupportFile extends ContentEntityBase implements DecisionSup
     $this->set('decisionSupportId', $decisionSupportId);
     return $this;
   }
-  
+
   /**
    * {@inheritdoc}
    */
   public function getVisible(): bool {
     return (bool) $this->get('visible')->value;
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -317,7 +317,7 @@ final class DecisionSupportFile extends ContentEntityBase implements DecisionSup
     $this->set('visible', $visible);
     return $this;
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -332,13 +332,13 @@ final class DecisionSupportFile extends ContentEntityBase implements DecisionSup
     $this->set('stepId', $stepId);
     return $this;
   }
-  
+
   /**
    * {@inheritdoc}
    */
-    public function getFileId(): ?int {
-      $file = $this->get('file')->entity;
-      return $file ? (int) $file->id() : null;
-    }
+  public function getFileId(): ?int {
+    $file = $this->get('file')->entity;
+    return $file ? (int) $file->id() : NULL;
+  }
 
 }

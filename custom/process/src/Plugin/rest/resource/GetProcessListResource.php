@@ -6,15 +6,14 @@ namespace Drupal\process\Plugin\rest\resource;
 
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
-use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Route;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\process\Entity\Process;
 use Drupal\process\Services\ProcessService\ProcessService;
 
 /**
@@ -58,6 +57,16 @@ final class GetProcessListResource extends ResourceBase {
   private readonly KeyValueStoreInterface $storage;
 
   /**
+   * The current user.
+   */
+  private AccountProxyInterface $currentUser;
+
+  /**
+   * The process service.
+   */
+  private ProcessService $processService;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(
@@ -68,7 +77,7 @@ final class GetProcessListResource extends ResourceBase {
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface $currentUser,
-    ProcessService $process_service
+    ProcessService $process_service,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('get_process_list_resource');
@@ -92,7 +101,6 @@ final class GetProcessListResource extends ResourceBase {
     );
   }
 
- 
   /**
    * Responds to GET requests.
    *
@@ -113,7 +121,10 @@ final class GetProcessListResource extends ResourceBase {
 
       return $response;
     }
-    catch (\Exception $e) {
+    catch (HttpExceptionInterface $e) {
+      throw $e;
+    }
+    catch (\Throwable $e) {
       // Log the error message.
       $this->logger->error('An error occurred while loading Process list: @message', ['@message' => $e->getMessage()]);
 
@@ -121,6 +132,5 @@ final class GetProcessListResource extends ResourceBase {
       throw new HttpException(500, 'Internal Server Error');
     }
   }
-
 
 }

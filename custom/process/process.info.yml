@@ -2,7 +2,7 @@ name: 'Process'
 type: module
 description: 'Process Class to build process'
 package: 'CS321'
-core_version_requirement: ^10
+core_version_requirement: ^10 || ^11
 config_devel:
   - rest.resource.get_process
   - rest.resource.get_process_list

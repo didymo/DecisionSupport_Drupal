@@ -8,13 +8,12 @@ use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
-use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Route;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\decision_support\Entity\DecisionSupport;
 use Drupal\decision_support\Services\DecisionSupport\DecisionSupportService;
 
 /**
@@ -59,6 +58,16 @@ final class PatchDecisionSupportResource extends ResourceBase {
   private readonly KeyValueStoreInterface $storage;
 
   /**
+   * The current user.
+   */
+  private AccountProxyInterface $currentUser;
+
+  /**
+   * The decision support service.
+   */
+  private DecisionSupportService $decisionSupportService;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(
@@ -69,7 +78,7 @@ final class PatchDecisionSupportResource extends ResourceBase {
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface $currentUser,
-    DecisionSupportService $decision_support_service
+    DecisionSupportService $decision_support_service,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('patch_decision_support');
@@ -103,7 +112,7 @@ final class PatchDecisionSupportResource extends ResourceBase {
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   The modified resource response.
-   * 
+   *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    *   Thrown when an error occurs during the update.
    */
@@ -116,16 +125,20 @@ final class PatchDecisionSupportResource extends ResourceBase {
 
     try {
       // Attempt to update the decision support entity.
-      $entity = $this->decisionSupportService->updateDecisionSupport($decisionSupportId,$data);
+      $entity = $this->decisionSupportService->updateDecisionSupport($decisionSupportId, $data);
       $this->logger->notice('The DecisionSupport @id has been updated.', ['@id' => $decisionSupportId]);
-      
+
       // Return a response with status code 200 OK.
       return new ModifiedResourceResponse($entity, 200);
-    } 
-    catch (\Exception $e) {
+    }
+    catch (HttpExceptionInterface $e) {
+      throw $e;
+    }
+    catch (\Throwable $e) {
       // Handle any other exceptions that occur during the update.
       $this->logger->error('An error occurred while updating DecisionSupport: @message', ['@message' => $e->getMessage()]);
       throw new HttpException(500, 'Internal Server Error');
     }
   }
+
 }

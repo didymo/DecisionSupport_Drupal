@@ -8,13 +8,12 @@ use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
-use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Route;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\decision_support\Entity\DecisionSupport;
 use Drupal\decision_support\Services\DecisionSupport\DecisionSupportService;
 
 /**
@@ -51,13 +50,22 @@ use Drupal\decision_support\Services\DecisionSupport\DecisionSupportService;
  * Drupal core.
  * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
-
 final class ArchiveDecisionSupportResource extends ResourceBase {
 
   /**
    * The key-value storage.
    */
   private readonly KeyValueStoreInterface $storage;
+
+  /**
+   * The current user.
+   */
+  private AccountProxyInterface $currentUser;
+
+  /**
+   * The decision support service.
+   */
+  private DecisionSupportService $decisionSupportService;
 
   /**
    * {@inheritdoc}
@@ -70,7 +78,7 @@ final class ArchiveDecisionSupportResource extends ResourceBase {
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface $currentUser,
-    DecisionSupportService $decision_support_service
+    DecisionSupportService $decision_support_service,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('archive_decision_support');
@@ -94,7 +102,7 @@ final class ArchiveDecisionSupportResource extends ResourceBase {
     );
   }
 
-   /**
+  /**
    * Responds to DELETE requests.
    *
    * @param string $decisionSupportId
@@ -107,22 +115,28 @@ final class ArchiveDecisionSupportResource extends ResourceBase {
    *   Thrown when the specified entity does not exist.
    */
   public function delete($decisionSupportId): ModifiedResourceResponse {
-    // Check user permission
+    // Check user permission.
     if (!$this->currentUser->hasPermission('access content')) {
-       throw new AccessDeniedHttpException();
-     }
- 
-     try {
-        // Archive the decision support entity.
-       $this->decisionSupportService->archiveDecisionSupport($decisionSupportId);
-       return new ModifiedResourceResponse(NULL, 204);
-     } 
-     catch (\Exception $e) {
+      throw new AccessDeniedHttpException();
+    }
+
+    try {
+      // Archive the decision support entity.
+      $this->decisionSupportService->archiveDecisionSupport($decisionSupportId);
+      return new ModifiedResourceResponse(NULL, 204);
+    }
+    catch (HttpExceptionInterface $e) {
+      throw $e;
+    }
+    catch (\Throwable $e) {
       // Log the error message.
-       $this->logger->error('An error occurred while deleting DecisionSupport entity with ID @id: @message', ['@id' => $decisionSupportId, '@message' => $e->getMessage(),]);
-       throw new HttpException(500, 'Internal Server Error');
-     }
-     return new ModifiedResourceResponse(NULL, 204);
-   }
+      $this->logger->error(
+        'An error occurred while deleting DecisionSupport entity with ID @id: @message',
+        ['@id' => $decisionSupportId, '@message' => $e->getMessage()]
+      );
+      throw new HttpException(500, 'Internal Server Error');
+    }
+    return new ModifiedResourceResponse(NULL, 204);
+  }
 
 }

@@ -7,9 +7,11 @@ namespace Drupal\decision_support\Entity;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Entity\RevisionableContentEntityBase;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\decision_support\DecisionSupportInterface;
+use Drupal\taxonomy\Entity\Term;
 use Drupal\user\EntityOwnerTrait;
 
 /**
@@ -122,7 +124,6 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
       ->setDisplayConfigurable('view', TRUE)
       ->setRequired(TRUE);
 
-
     $fields['language'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Language'))
       ->setDescription(t('The language of the decision support.'))
@@ -143,11 +144,11 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
       ->setDescription(t('The status of this revision.'))
       ->setSetting('target_type', 'taxonomy_term')
       ->setSetting('handler', 'default')
-      ->setSetting('handler_settings', array(
-        'target_bundles' => array(
-          'status' => 'status'
-        )
-      ))
+      ->setSetting('handler_settings', [
+        'target_bundles' => [
+          'status' => 'status',
+        ],
+      ])
       ->setRevisionable(TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
@@ -189,8 +190,8 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
         ],
       ])
       ->setDisplayConfigurable('view', TRUE);
-    
-       $fields['completed'] = BaseFieldDefinition::create('boolean')
+
+    $fields['completed'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Completed'))
       ->setDefaultValue(FALSE)
       ->setDisplayOptions('form', [
@@ -220,7 +221,6 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
       ->setDescription(t('The validity of the decision support.'))
       ->setRevisionable(TRUE)
       ->setDefaultValue(TRUE);
-
 
     $fields['json_string'] = BaseFieldDefinition::create('string_long')
       ->setLabel(t('JSON String'))
@@ -292,16 +292,16 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
 
   }
 
-    /**
+  /**
    * {@inheritdoc}
    */
-  protected function urlRouteParameters($rel)
-  {
+  protected function urlRouteParameters($rel) {
     $uri_route_parameters = parent::urlRouteParameters($rel);
 
     if ($rel === 'revision_revert' && $this instanceof RevisionableInterface) {
       $uri_route_parameters[$this->getEntityTypeId() . '_revision'] = $this->getRevisionId();
-    } elseif ($rel === 'revision_delete' && $this instanceof RevisionableInterface) {
+    }
+    elseif ($rel === 'revision_delete' && $this instanceof RevisionableInterface) {
       $uri_route_parameters[$this->getEntityTypeId() . '_revision'] = $this->getRevisionId();
     }
 
@@ -309,18 +309,16 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
-  public function getName(): string
-  {
+  public function getName(): string {
     return $this->get('label')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setName(string $name): DecisionSupportInterface
-  {
+  public function setName(string $name): DecisionSupportInterface {
     $this->set('label', $name);
     return $this;
   }
@@ -328,16 +326,14 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
   /**
    * {@inheritdoc}
    */
-  public function getJsonString(): string
-  {
+  public function getJsonString(): string {
     return $this->get('json_string')->value ?? '';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setJsonString(string $jsonString): DecisionSupportInterface
-  {
+  public function setJsonString(string $jsonString): DecisionSupportInterface {
     $this->set('json_string', $jsonString);
     return $this;
   }
@@ -349,9 +345,11 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
     return $this->get('uid')->value;
   }
 
-  public function setUid(entity_reference $uid): DecisionSupportInterface
-  {
-    $this->set('uid', $uid);
+  /**
+   * Sets the owner user ID.
+   */
+  public function setUid(int $uid): DecisionSupportInterface {
+    $this->setOwnerId($uid);
     return $this;
   }
 
@@ -363,9 +361,9 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
 
     if (isset($targetId[0])) {
       $term = Term::load($targetId[0]['target_id']);
-
-      return $term->getName();
-    } else {
+      return $term ? $term->getName() : NULL;
+    }
+    else {
       return NULL;
     }
   }
@@ -378,18 +376,19 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
       ->getStorage('taxonomy_term')
       ->loadByProperties(['name' => $term_name]);
     $term = array_pop($terms);
-    $this->set('revision_status', $term->id());
+    if ($term) {
+      $this->set('revision_status', $term->id());
+    }
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCreatedTime()
-  {
+  public function getCreatedTime() {
     $timestamp = $this->get('created')->value;
     $date_formatter = \Drupal::service('date.formatter');
-    //format the timestamp to a  date/time
+    // Format the timestamp to a  date/time.
     $formatted_date = $date_formatter->format($timestamp);
     return $formatted_date;
   }
@@ -397,28 +396,29 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime($timestamp)
-  {
+  public function setCreatedTime($timestamp) {
     $this->set('created', $timestamp);
     return $this;
   }
 
-  public function getUpdatedTime()
-  {
+  /**
+   * Gets the updated time.
+   */
+  public function getUpdatedTime() {
     $timestamp = $this->get('changed')->value;
     $date_formatter = \Drupal::service('date.formatter');
-    //format the timestamp to a  date/time
+    // Format the timestamp to a  date/time.
     $formatted_date = $date_formatter->format($timestamp);
     return $formatted_date;
   }
 
-  public function getProcessLabel(): string
-  {
+  /**
+   * Gets the related process label from the stored JSON payload.
+   */
+  public function getProcessLabel(): string {
     $json = $this->get('json_string')->value ?? '';
-    $jsonData = json_decode($json, true);
-
-    $processLabel = $jsonData['processLabel'];
-    return $processLabel;
+    $jsonData = json_decode($json, TRUE);
+    return is_array($jsonData) && isset($jsonData['processLabel']) ? (string) $jsonData['processLabel'] : '';
   }
 
   /**
@@ -427,7 +427,7 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
   public function getIsCompleted(): bool {
     return (bool) $this->get('completed')->value;
   }
-  
+
   /**
    * {@inheritdoc}
    */

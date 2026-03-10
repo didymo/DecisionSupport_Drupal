@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\process\Services\ProcessService;
 
-use Drupal\process\Entity\Process;
-
 /**
  * Interface for process service.
  */
@@ -14,20 +12,20 @@ interface ProcessServiceInterface {
   /**
    * Loads an Process entity.
    *
-   * @return Process|null
+   * @return \Drupal\process\Entity\Process|null
    *   The Process entity, or NULL if not found.
    */
   public function getProcessList();
 
-/**
- * Get a Process by ID.
- *
- * @param int $processId
- *   The ID of the process entity to retrieve.
- *
- * @return string
- *   The JSON representation of the Process entity.
- */
+  /**
+   * Get a Process by ID.
+   *
+   * @param int $processId
+   *   The ID of the process entity to retrieve.
+   *
+   * @return string
+   *   The JSON representation of the Process entity.
+   */
   public function getProcess($processId);
 
   /**
@@ -36,7 +34,7 @@ interface ProcessServiceInterface {
    * @param array $data
    *   The data for the new entity.
    *
-   * @return Process
+   * @return \Drupal\process\Entity\Process
    *   The created Process entity.
    */
   public function createProcess(array $data);
@@ -47,11 +45,10 @@ interface ProcessServiceInterface {
    * @param array $data
    *   The data for the new entity.
    *
-   * @return Process
+   * @return \Drupal\process\Entity\Process
    *   The duplicated Process entity.
    */
   public function duplicateProcess(array $data);
-
 
   /**
    * Updates a Process entity.
@@ -62,12 +59,12 @@ interface ProcessServiceInterface {
    * @param $processId
    *   The id of the existing entity.
    *
-   * @return Process
+   * @return \Drupal\process\Entity\Process
    *   The updated Process entity.
    */
   public function patchProcess($processId, array $data);
 
-    /**
+  /**
    * Updates a Process Json String.
    *
    * @param array $data
@@ -76,7 +73,7 @@ interface ProcessServiceInterface {
    * @param $processId
    *   The id of the existing entity.
    *
-   * @return Process
+   * @return \Drupal\process\Entity\Process
    *   The updated Process entity.
    */
   public function updateProcess($processId, array $data);
@@ -88,7 +85,5 @@ interface ProcessServiceInterface {
    *   The id of the existing entity.
    */
   public function deleteProcess($processId);
-
-
 
 }

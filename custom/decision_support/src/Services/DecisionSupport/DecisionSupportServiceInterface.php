@@ -4,32 +4,28 @@ declare(strict_types=1);
 
 namespace Drupal\decision_support\Services\DecisionSupport;
 
-use Drupal\decision_support\Entity\DecisionSupport;
-
-
 /**
  * Interface for decision support service.
  */
 interface DecisionSupportServiceInterface {
 
- /**
+  /**
    * Loads a DecisionSupport entity.
    *
-   * @return DecisionSupport|null
+   * @return \Drupal\decision_support\Entity\DecisionSupport|null
    *   The DecisionSupport entity, or NULL if not found.
    */
   public function getDecisionSupportList();
 
-/**
- * Get a DecisionSupport by ID.
- *
- * @param int $decisionSupportId
- *   The ID of the decisionSupport entity to retrieve.
- *
- * @return string
- *   The JSON representation of the DecisionSupport entity.
- */
-
+  /**
+   * Get a DecisionSupport by ID.
+   *
+   * @param int $decisionSupportId
+   *   The ID of the decisionSupport entity to retrieve.
+   *
+   * @return string
+   *   The JSON representation of the DecisionSupport entity.
+   */
   public function getDecisionSupportReportList();
 
   /**
@@ -49,10 +45,9 @@ interface DecisionSupportServiceInterface {
    * @param array $data
    *   The data for the new entity.
    *
-   * @return DecisionSupport
+   * @return \Drupal\decision_support\Entity\DecisionSupport
    *   The created DecisionSupport entity.
    */
-
   public function getDecisionSupportReport($decisionSupportId);
 
   /**
@@ -61,7 +56,7 @@ interface DecisionSupportServiceInterface {
    * @param array $data
    *   The data for the new entity.
    *
-   * @return DecisionSupport
+   * @return \Drupal\decision_support\Entity\DecisionSupport
    *   The created DecisionSupport entity.
    */
   public function createDecisionSupport(array $data);
@@ -75,11 +70,10 @@ interface DecisionSupportServiceInterface {
    * @param $decisionSupportId
    *   The id of the existing entity.
    *
-   * @return DecisionSupport
+   * @return \Drupal\decision_support\Entity\DecisionSupport
    *   The updated DecisionSupport entity.
    */
   public function updateDecisionSupport($decisionSupportId, array $data);
-
 
   /**
    * Move a existing DecisionSupport entity to archived.
@@ -88,4 +82,5 @@ interface DecisionSupportServiceInterface {
    *   The id of the existing entity.
    */
   public function archiveDecisionSupport($decisionSupportId);
+
 }

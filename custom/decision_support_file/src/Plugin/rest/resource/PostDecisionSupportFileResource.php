@@ -8,14 +8,11 @@ use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
-use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Route;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\decision_support_file\Entity\DecisionSupportFile;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Drupal\decision_support_file\Services\DecisionSupportFile\DecisionSupportFileService;
 
@@ -60,6 +57,16 @@ final class PostDecisionSupportFileResource extends ResourceBase {
   private readonly KeyValueStoreInterface $storage;
 
   /**
+   * The current user.
+   */
+  private AccountProxyInterface $currentUser;
+
+  /**
+   * The decision support file service.
+   */
+  private DecisionSupportFileService $decisionSupportFileService;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(
@@ -69,8 +76,8 @@ final class PostDecisionSupportFileResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
-    AccountProxyInterface    $currentUser,
-    DecisionSupportFileService $decision_support_file_service
+    AccountProxyInterface $currentUser,
+    DecisionSupportFileService $decision_support_file_service,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('post_decision_support_file');
@@ -93,7 +100,8 @@ final class PostDecisionSupportFileResource extends ResourceBase {
       $container->get('decision_support_file.service')
     );
   }
- /**
+
+  /**
    * Responds to POST requests and saves the new record.
    *
    * @param array $data
@@ -115,7 +123,10 @@ final class PostDecisionSupportFileResource extends ResourceBase {
       // Return a response with status code 201 Created.
       return new ModifiedResourceResponse($entity, 201);
     }
-    catch (\Exception $e) {
+    catch (HttpExceptionInterface $e) {
+      throw $e;
+    }
+    catch (\Throwable $e) {
       // Log the error message.
       $this->logger->error('An error occurred while creating DecisionSupportFile entity: @message', ['@message' => $e->getMessage()]);
 

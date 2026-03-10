@@ -6,17 +6,13 @@ namespace Drupal\decision_support_file\Plugin\rest\resource;
 
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
-use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\Routing\Route;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\decision_support_file\Entity\DecisionSupportFile;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Drupal\decision_support_file\Services\DecisionSupportFile\DecisionSupportFileService;
 
@@ -55,7 +51,7 @@ use Drupal\decision_support_file\Services\DecisionSupportFile\DecisionSupportFil
  */
 final class GetDecisionSupportFileResource extends ResourceBase {
 
-   /**
+  /**
    * The key-value storage.
    */
   private readonly KeyValueStoreInterface $storage;
@@ -64,6 +60,11 @@ final class GetDecisionSupportFileResource extends ResourceBase {
    * The current user.
    */
   private AccountProxyInterface $currentUser;
+
+  /**
+   * The decision support file service.
+   */
+  private DecisionSupportFileService $decisionSupportFileService;
 
   /**
    * {@inheritdoc}
@@ -75,8 +76,8 @@ final class GetDecisionSupportFileResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
-    AccountProxyInterface    $currentUser,
-    DecisionSupportFileService $decision_support_file_service
+    AccountProxyInterface $currentUser,
+    DecisionSupportFileService $decision_support_file_service,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('get_decision_support_file');
@@ -103,7 +104,7 @@ final class GetDecisionSupportFileResource extends ResourceBase {
   /**
    * Responds to GET requests.
    */
-  public function get($decisionSupportId){
+  public function get($decisionSupportId) {
     // Check user permissions.
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
@@ -117,7 +118,10 @@ final class GetDecisionSupportFileResource extends ResourceBase {
 
       return $response;
     }
-    catch (\Exception $e) {
+    catch (HttpExceptionInterface $e) {
+      throw $e;
+    }
+    catch (\Throwable $e) {
       // Log the error message.
       $this->logger->error('An error occurred while loading Decision Support File list: @message', ['@message' => $e->getMessage()]);
 
@@ -125,4 +129,5 @@ final class GetDecisionSupportFileResource extends ResourceBase {
       throw new HttpException(500, 'Internal Server Error');
     }
   }
-  }
+
+}

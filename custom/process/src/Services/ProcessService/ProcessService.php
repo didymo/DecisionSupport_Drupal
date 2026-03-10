@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Drupal\process\Services\ProcessService;
 
-
 use Drupal\process\Entity\Process;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -34,7 +34,7 @@ final class ProcessService implements ProcessServiceInterface {
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, LoggerInterface $logger) {
     $this->entityTypeManager = $entity_type_manager;
-    $this ->logger = $logger;
+    $this->logger = $logger;
   }
 
   /**
@@ -43,24 +43,23 @@ final class ProcessService implements ProcessServiceInterface {
   public function getProcessList() {
 
     $unformattedProcesses = Process::loadMultiple();
-    $processList = array();
+    $processList = [];
     foreach ($unformattedProcesses as $unformattedProcess) {
       if ($unformattedProcess instanceof Process) {
-        if($unformattedProcess -> getStatus()){
-        $process['label'] = $unformattedProcess->getLabel();
-        $process['entityId'] = $unformattedProcess->id();
-        $process['revisionId'] = $unformattedProcess->getRevisionId();
-        $process['revisionCreationTime'] = $unformattedProcess->getRevisionCreationTime();
-        $process['createdTime'] = $unformattedProcess->getCreatedTime();
-        $process['updatedTime'] = $unformattedProcess->getupdatedTime();
-        $process['revisionStatus'] = $unformattedProcess->getRevisionStatus();
-        $process['enabled'] = $unformattedProcess->getStatus();
-        $process['json_string'] = $unformattedProcess->getJsonString();
+        if ($unformattedProcess->getStatus()) {
+          $process['label'] = $unformattedProcess->getLabel();
+          $process['entityId'] = $unformattedProcess->id();
+          $process['revisionId'] = $unformattedProcess->getRevisionId();
+          $process['revisionCreationTime'] = $unformattedProcess->getRevisionCreationTime();
+          $process['createdTime'] = $unformattedProcess->getCreatedTime();
+          $process['updatedTime'] = $unformattedProcess->getupdatedTime();
+          $process['revisionStatus'] = $unformattedProcess->getRevisionStatus();
+          $process['enabled'] = $unformattedProcess->getStatus();
+          $process['json_string'] = $unformattedProcess->getJsonString();
 
-        $processList[] = $process;
-        unset($process);
+          $processList[] = $process;
+        }
       }
-    }
     }
 
     return $processList;
@@ -73,12 +72,13 @@ final class ProcessService implements ProcessServiceInterface {
 
     $process = Process::load($processId);
 
-    if(!$process){
+    if (!$process) {
       throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
     }
-    if($process -> getStatus()){
+    if ($process->getStatus()) {
       $processJsonString = $process->getJsonString();
-    }else{
+    }
+    else {
       $processJsonString = '';
     }
     return $processJsonString;
@@ -88,114 +88,126 @@ final class ProcessService implements ProcessServiceInterface {
    * {@inheritdoc}
    */
   public function createProcess(array $data) {
+    if (empty($data['revision_status'])) {
+      throw new BadRequestHttpException('Missing required field: revision_status');
+    }
 
     $process = Process::create($data);
 
-    $entityId = $process->save();
+    $process->save();
     $returnValue['entityId'] = $process->id();
     $jsonstring = [
-      'entityId' =>$process->id(),
-      'uuid'=>uniqid(),
-      'label' =>$process->label(),
-      'steps'=>[]
+      'entityId' => $process->id(),
+      'uuid' => uniqid(),
+      'label' => $process->label(),
+      'steps' => [],
     ];
     $processJsonstring = json_encode($jsonstring);
     $process->setJsonString($processJsonstring);
     $process->setRevisionStatus($data['revision_status']);
-    $entity=$process->save();
+    $process->save();
 
-    // log the creation of the entity.
+    // Log the creation of the entity.
     $this->logger->notice('Created new Process entity with ID @id.', ['@id' => $returnValue]);
-    return $entity;
+    return $process;
   }
 
   /**
    * {@inheritdoc}
    */
   public function duplicateProcess(array $data) {
+    if (empty($data['revision_status']) || empty($data['json_string'])) {
+      throw new BadRequestHttpException('Missing required fields for process duplication');
+    }
 
     $process = Process::create($data);
 
-    $entityId = $process->save();
+    $process->save();
     $returnValue['entityId'] = $process->id();
-    $data_jsonstring = json_decode($data['json_string'],true);
+    $data_jsonstring = json_decode($data['json_string'], TRUE);
+    if (!is_array($data_jsonstring) || !isset($data_jsonstring['steps']) || !is_array($data_jsonstring['steps'])) {
+      throw new BadRequestHttpException('Invalid process json_string payload');
+    }
     $newjsonstring = [
-      'entityId' =>$process->id(),
-      'uuid'=>uniqid(),
-      'label' =>$process->label(),
-      'steps'=>$data_jsonstring['steps']
+      'entityId' => $process->id(),
+      'uuid' => uniqid(),
+      'label' => $process->label(),
+      'steps' => $data_jsonstring['steps'],
     ];
     $processJsonstring = json_encode($newjsonstring);
     $process->setJsonString($processJsonstring);
     $process->setRevisionStatus($data['revision_status']);
-    $entity=$process->save();
+    $process->save();
 
-    // log the creation of the entity.
+    // Log the creation of the entity.
     $this->logger->notice('Duplicated Process entity with new ID @id.', ['@id' => $returnValue]);
-    return $entity;
+    return $process;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function patchProcess($processId, array $data)
-  {
+  public function patchProcess($processId, array $data) {
     $process = Process::load($processId);
 
     if (!$process) {
       throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
+    }
+
+    if (empty($data['label']) || empty($data['revision_status'])) {
+      throw new BadRequestHttpException('Missing required fields for process update');
     }
 
     $process->setLabel($data['label']);
     $process->setRevisionStatus($data['revision_status']);
-    $entity=$process->save();
+    $process->save();
 
     $this->logger->notice('The Process @id has been updated.', ['@id' => $processId]);
 
-    return $entity;
+    return $process;
   }
-
-    /**
-   * {@inheritdoc}
-   */
-  public function updateProcess($processId, array $data)
-  {
-    $process = Process::load($processId);
-
-    if (!$process) {
-      throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
-    }
-    $json_string = json_encode($data);
-
-    $process->setJsonString($json_string);
-    $entity=$process->save();
-
-    $this->logger->notice('The Process @id has been updated.', ['@id' => $processId]);
-
-    return $entity;
-  }
-
 
   /**
    * {@inheritdoc}
    */
-  public function deleteProcess($processId){
+  public function updateProcess($processId, array $data) {
+    $process = Process::load($processId);
+
+    if (!$process) {
+      throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
+    }
+    if ($data === []) {
+      throw new BadRequestHttpException('Missing process update payload');
+    }
+    $json_string = json_encode($data);
+
+    $process->setJsonString($json_string);
+    $process->save();
+
+    $this->logger->notice('The Process @id has been updated.', ['@id' => $processId]);
+
+    return $process;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deleteProcess($processId) {
 
     $process = Process::load($processId);
     if (!$process) {
       throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
     }
-    $label = $process -> getLabel();
+    $label = $process->getLabel();
     $newLabel = "$label - Archived";
     $process->setLabel($newLabel);
-    $process->setStatus(false);
+    $process->setStatus(FALSE);
     $process->setRevisionStatus("Archived");
-    $entity=$process->save();
+    $process->save();
 
     $this->logger->notice('Moved Process with ID @id to archived.', ['@id' => $processId]);
 
-    return $entity;
+    return $process;
   }
-
 
 }

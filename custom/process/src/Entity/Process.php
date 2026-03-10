@@ -7,12 +7,12 @@ namespace Drupal\process\Entity;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Entity\RevisionableContentEntityBase;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\process\ProcessInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\user\EntityOwnerTrait;
-use Drupal\Core\Datetime\DateFormatterInterface;
 
 /**
  * Defines the process entity class.
@@ -124,7 +124,6 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
       ->setDisplayConfigurable('view', TRUE)
       ->setRequired(TRUE);
 
-
     $fields['language'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Language'))
       ->setDescription(t('The language of the process.'))
@@ -145,11 +144,11 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
       ->setDescription(t('The status of this revision.'))
       ->setSetting('target_type', 'taxonomy_term')
       ->setSetting('handler', 'default')
-      ->setSetting('handler_settings', array(
-        'target_bundles' => array(
-          'status' => 'status'
-        )
-      ))
+      ->setSetting('handler_settings', [
+        'target_bundles' => [
+          'status' => 'status',
+        ],
+      ])
       ->setRevisionable(TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
@@ -278,20 +277,20 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
         'weight' => 20,
       ])
       ->setDisplayConfigurable('view', TRUE);
-      
+
     return $fields;
   }
 
-   /**
+  /**
    * {@inheritdoc}
    */
-  protected function urlRouteParameters($rel)
-  {
+  protected function urlRouteParameters($rel) {
     $uri_route_parameters = parent::urlRouteParameters($rel);
 
     if ($rel === 'revision_revert' && $this instanceof RevisionableInterface) {
       $uri_route_parameters[$this->getEntityTypeId() . '_revision'] = $this->getRevisionId();
-    } elseif ($rel === 'revision_delete' && $this instanceof RevisionableInterface) {
+    }
+    elseif ($rel === 'revision_delete' && $this instanceof RevisionableInterface) {
       $uri_route_parameters[$this->getEntityTypeId() . '_revision'] = $this->getRevisionId();
     }
 
@@ -299,18 +298,16 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
-  public function getLabel(): string
-  {
+  public function getLabel(): string {
     return $this->get('label')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setLabel(string $label): ProcessInterface
-  {
+  public function setLabel(string $label): ProcessInterface {
     $this->set('label', $label);
     return $this;
   }
@@ -318,16 +315,14 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
   /**
    * {@inheritdoc}
    */
-  public function getJsonString(): string
-  {
+  public function getJsonString(): string {
     return $this->get('json_string')->value ?? '';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setJsonString(string $jsonString): ProcessInterface
-  {
+  public function setJsonString(string $jsonString): ProcessInterface {
     $this->set('json_string', $jsonString);
     return $this;
   }
@@ -341,8 +336,9 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
     if (isset($targetId[0])) {
       $term = Term::load($targetId[0]['target_id']);
 
-      return $term->getName() ?? ' ';
-    } else {
+      return $term ? $term->getName() : NULL;
+    }
+    else {
       return NULL;
     }
   }
@@ -355,18 +351,19 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
       ->getStorage('taxonomy_term')
       ->loadByProperties(['name' => $term_name]);
     $term = array_pop($terms);
-    $this->set('revision_status', $term->id());
+    if ($term) {
+      $this->set('revision_status', $term->id());
+    }
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCreatedTime()
-  {
+  public function getCreatedTime() {
     $timestamp = $this->get('created')->value;
     $date_formatter = \Drupal::service('date.formatter');
-    //format the timestamp to a  date/time
+    // Format the timestamp to a  date/time.
     $formatted_date = $date_formatter->format($timestamp);
     return $formatted_date;
   }
@@ -374,20 +371,18 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime($timestamp)
-  {
+  public function setCreatedTime($timestamp) {
     $this->set('created', $timestamp);
     return $this;
   }
 
-    /**
+  /**
    * {@inheritdoc}
    */
-  public function getUpdatedTime()
-  {
+  public function getUpdatedTime() {
     $timestamp = $this->get('changed')->value;
     $date_formatter = \Drupal::service('date.formatter');
-    //format the timestamp to a  date/time
+    // Format the timestamp to a  date/time.
     $formatted_date = $date_formatter->format($timestamp);
     return $formatted_date;
   }
@@ -395,20 +390,16 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
   /**
    * {@inheritdoc}
    */
-  public function getStatus(): bool
-  {
+  public function getStatus(): bool {
     return (bool) $this->get('status')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setStatus(bool $new_status)
-  {
+  public function setStatus(bool $new_status) {
     $this->set('status', $new_status);
-   return $this;
+    return $this;
   }
-
-
 
 }

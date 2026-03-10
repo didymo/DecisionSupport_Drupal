@@ -6,15 +6,14 @@ namespace Drupal\decision_support\Plugin\rest\resource;
 
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
-use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Route;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\decision_support\Entity\DecisionSupport;
 use Drupal\decision_support\Services\DecisionSupport\DecisionSupportService;
 
 /**
@@ -58,6 +57,16 @@ final class GetDecisionSupportListResource extends ResourceBase {
   private readonly KeyValueStoreInterface $storage;
 
   /**
+   * The current user.
+   */
+  private AccountProxyInterface $currentUser;
+
+  /**
+   * The decision support service.
+   */
+  private DecisionSupportService $decisionSupportService;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(
@@ -68,7 +77,7 @@ final class GetDecisionSupportListResource extends ResourceBase {
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface $currentUser,
-    DecisionSupportService $decision_support_service
+    DecisionSupportService $decision_support_service,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('decision_support_get_list');
@@ -91,6 +100,7 @@ final class GetDecisionSupportListResource extends ResourceBase {
       $container->get('decision_support.service')
     );
   }
+
   /**
    * Responds to GET requests.
    *
@@ -111,7 +121,10 @@ final class GetDecisionSupportListResource extends ResourceBase {
 
       return $response;
     }
-    catch (\Exception $e) {
+    catch (HttpExceptionInterface $e) {
+      throw $e;
+    }
+    catch (\Throwable $e) {
       // Log the error message.
       $this->logger->error('An error occurred while loading decision support list: @message', ['@message' => $e->getMessage()]);
 

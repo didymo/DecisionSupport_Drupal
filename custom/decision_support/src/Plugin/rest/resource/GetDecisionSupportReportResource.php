@@ -107,7 +107,7 @@ final class GetDecisionSupportReportResource extends ResourceBase {
    */
   public function get($decisionSupportId): JsonResponse {
     // Check user permissions.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('view decision_support_entity')) {
       throw new AccessDeniedHttpException();
     }
 

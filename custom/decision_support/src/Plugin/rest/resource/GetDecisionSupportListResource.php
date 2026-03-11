@@ -109,7 +109,7 @@ final class GetDecisionSupportListResource extends ResourceBase {
    */
   public function get() {
     // Check user permissions.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('view decision_support_entity')) {
       throw new AccessDeniedHttpException();
     }
 

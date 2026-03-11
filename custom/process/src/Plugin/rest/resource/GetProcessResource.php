@@ -106,7 +106,7 @@ final class GetProcessResource extends ResourceBase {
    */
   public function get($processId): JsonResponse {
     // Check user permissions.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('view process')) {
       throw new AccessDeniedHttpException();
     }
 

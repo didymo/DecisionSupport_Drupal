@@ -109,7 +109,7 @@ final class GetProcessListResource extends ResourceBase {
    */
   public function get() {
     // Check user permissions.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('view process')) {
       throw new AccessDeniedHttpException();
     }
 

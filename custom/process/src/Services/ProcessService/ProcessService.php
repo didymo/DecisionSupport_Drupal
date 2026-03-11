@@ -93,22 +93,21 @@ final class ProcessService implements ProcessServiceInterface {
     }
 
     $process = Process::create($data);
-
-    $process->save();
-    $returnValue['entityId'] = $process->id();
-    $jsonstring = [
-      'entityId' => $process->id(),
-      'uuid' => uniqid(),
-      'label' => $process->label(),
-      'steps' => [],
-    ];
-    $processJsonstring = json_encode($jsonstring);
-    $process->setJsonString($processJsonstring);
     $process->setRevisionStatus($data['revision_status']);
     $process->save();
 
+    $jsonstring = [
+      'entityId' => $process->id(),
+      'uuid' => $process->uuid(),
+      'label' => $process->label(),
+      'steps' => [],
+    ];
+    $process->setNewRevision(FALSE);
+    $process->setJsonString(json_encode($jsonstring));
+    $process->save();
+
     // Log the creation of the entity.
-    $this->logger->notice('Created new Process entity with ID @id.', ['@id' => $returnValue]);
+    $this->logger->notice('Created new Process entity with ID @id.', ['@id' => $process->id()]);
     return $process;
   }
 
@@ -120,27 +119,27 @@ final class ProcessService implements ProcessServiceInterface {
       throw new BadRequestHttpException('Missing required fields for process duplication');
     }
 
-    $process = Process::create($data);
-
-    $process->save();
-    $returnValue['entityId'] = $process->id();
     $data_jsonstring = json_decode($data['json_string'], TRUE);
     if (!is_array($data_jsonstring) || !isset($data_jsonstring['steps']) || !is_array($data_jsonstring['steps'])) {
       throw new BadRequestHttpException('Invalid process json_string payload');
     }
-    $newjsonstring = [
-      'entityId' => $process->id(),
-      'uuid' => uniqid(),
-      'label' => $process->label(),
-      'steps' => $data_jsonstring['steps'],
-    ];
-    $processJsonstring = json_encode($newjsonstring);
-    $process->setJsonString($processJsonstring);
+
+    $process = Process::create($data);
     $process->setRevisionStatus($data['revision_status']);
     $process->save();
 
+    $newjsonstring = [
+      'entityId' => $process->id(),
+      'uuid' => $process->uuid(),
+      'label' => $process->label(),
+      'steps' => $data_jsonstring['steps'],
+    ];
+    $process->setNewRevision(FALSE);
+    $process->setJsonString(json_encode($newjsonstring));
+    $process->save();
+
     // Log the creation of the entity.
-    $this->logger->notice('Duplicated Process entity with new ID @id.', ['@id' => $returnValue]);
+    $this->logger->notice('Duplicated Process entity with new ID @id.', ['@id' => $process->id()]);
     return $process;
   }
 

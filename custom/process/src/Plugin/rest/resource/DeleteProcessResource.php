@@ -116,7 +116,7 @@ final class DeleteProcessResource extends ResourceBase {
    */
   public function patch($processId): ModifiedResourceResponse {
     // Check user permissions.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('delete process')) {
       throw new AccessDeniedHttpException();
     }
 

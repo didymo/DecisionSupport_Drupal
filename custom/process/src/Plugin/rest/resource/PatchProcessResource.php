@@ -120,7 +120,7 @@ final class PatchProcessResource extends ResourceBase {
   public function patch($processId, array $data): ModifiedResourceResponse {
 
     // Use current user after pass authentication to validate access.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('edit process')) {
       throw new AccessDeniedHttpException();
     }
 

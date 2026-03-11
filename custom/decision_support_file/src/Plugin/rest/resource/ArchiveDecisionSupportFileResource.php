@@ -110,7 +110,7 @@ final class ArchiveDecisionSupportFileResource extends ResourceBase {
   public function patch($fileId): ModifiedResourceResponse {
 
     // Check user permissions.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('delete decision_support_file')) {
       throw new AccessDeniedHttpException();
     }
 

@@ -112,7 +112,7 @@ final class PostDecisionSupportResource extends ResourceBase {
    */
   public function post(array $data): ModifiedResourceResponse {
     // Check user permissions.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('create decision_support_entity')) {
       throw new AccessDeniedHttpException();
     }
 

@@ -106,7 +106,7 @@ final class GetDecisionSupportFileResource extends ResourceBase {
    */
   public function get($decisionSupportId) {
     // Check user permissions.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('view decision_support_file')) {
       throw new AccessDeniedHttpException();
     }
 

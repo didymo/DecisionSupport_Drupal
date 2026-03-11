@@ -187,26 +187,24 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     }
 
     $decisionSupport = DecisionSupport::create($data);
+    $decisionSupport->setIsCompleted(FALSE);
     $decisionSupport->save();
 
-    $decisionSupport->setIsCompleted(FALSE);
-
-    $returnValue['entityId'] = $decisionSupport->id();
     $jsonstring = [
       'entityId' => $decisionSupport->id(),
-      'uuid' => uniqid(),
+      'uuid' => $decisionSupport->uuid(),
       'decisionSupportLabel' => $decisionSupport->label(),
       'processId' => $data['process_id'],
       'processLabel' => $process->getLabel(),
       'steps' => $processData['steps'],
-      'isCompleted' => $decisionSupport->getIsCompleted() ,
+      'isCompleted' => $decisionSupport->getIsCompleted(),
     ];
-    $decisionSupportJsonstring = json_encode($jsonstring);
-    $decisionSupport->setJsonString($decisionSupportJsonstring);
+    $decisionSupport->setNewRevision(FALSE);
+    $decisionSupport->setJsonString(json_encode($jsonstring));
     $decisionSupport->save();
 
     // Log the creation of the entity.
-    $this->logger->notice('Created new DecisionSupport entity with ID @id.', ['@id' => $returnValue]);
+    $this->logger->notice('Created new DecisionSupport entity with ID @id.', ['@id' => $decisionSupport->id()]);
     return $decisionSupport;
   }
 

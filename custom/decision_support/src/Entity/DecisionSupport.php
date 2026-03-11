@@ -342,7 +342,7 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
    * {@inheritdoc}
    */
   public function getUid() {
-    return $this->get('uid')->value;
+    return $this->getOwnerId();
   }
 
   /**
@@ -374,7 +374,7 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
   public function setRevisionStatus($term_name) {
     $terms = \Drupal::entityTypeManager()
       ->getStorage('taxonomy_term')
-      ->loadByProperties(['name' => $term_name]);
+      ->loadByProperties(['name' => $term_name, 'vid' => 'status']);
     $term = array_pop($terms);
     if ($term) {
       $this->set('revision_status', $term->id());

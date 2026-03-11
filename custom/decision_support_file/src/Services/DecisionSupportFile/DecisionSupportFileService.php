@@ -6,7 +6,9 @@ namespace Drupal\decision_support_file\Services\DecisionSupportFile;
 
 use Drupal\decision_support_file\Entity\DecisionSupportFile;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountProxyInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -30,11 +32,19 @@ final class DecisionSupportFileService implements DecisionSupportFileServiceInte
   protected LoggerInterface $logger;
 
   /**
-   * Constructs a ProcessService object.
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountProxyInterface
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, LoggerInterface $logger) {
+  protected AccountProxyInterface $currentUser;
+
+  /**
+   * Constructs a DecisionSupportFileService object.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, LoggerInterface $logger, AccountProxyInterface $current_user) {
     $this->entityTypeManager = $entity_type_manager;
     $this->logger = $logger;
+    $this->currentUser = $current_user;
   }
 
   /**
@@ -92,6 +102,9 @@ final class DecisionSupportFileService implements DecisionSupportFileServiceInte
     $file_entity = $this->entityTypeManager->getStorage('file')->load($data['fid']);
     if (!$file_entity) {
       throw new NotFoundHttpException('File not found');
+    }
+    if (!$file_entity->access('view', $this->currentUser)) {
+      throw new AccessDeniedHttpException('Access denied to the specified file.');
     }
 
     // Create new DecisionSupportFile entity.

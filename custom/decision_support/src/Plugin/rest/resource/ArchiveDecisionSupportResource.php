@@ -116,7 +116,7 @@ final class ArchiveDecisionSupportResource extends ResourceBase {
    */
   public function delete($decisionSupportId): ModifiedResourceResponse {
     // Check user permission.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('delete decision_support_entity')) {
       throw new AccessDeniedHttpException();
     }
 
@@ -136,7 +136,6 @@ final class ArchiveDecisionSupportResource extends ResourceBase {
       );
       throw new HttpException(500, 'Internal Server Error');
     }
-    return new ModifiedResourceResponse(NULL, 204);
   }
 
 }

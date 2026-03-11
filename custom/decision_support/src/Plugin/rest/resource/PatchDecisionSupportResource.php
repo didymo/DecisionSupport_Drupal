@@ -119,7 +119,7 @@ final class PatchDecisionSupportResource extends ResourceBase {
   public function patch($decisionSupportId, array $data): ModifiedResourceResponse {
 
     // Use current user after pass authentication to validate access.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('edit decision_support_entity')) {
       throw new AccessDeniedHttpException();
     }
 

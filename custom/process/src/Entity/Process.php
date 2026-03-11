@@ -349,7 +349,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
   public function setRevisionStatus($term_name) {
     $terms = \Drupal::entityTypeManager()
       ->getStorage('taxonomy_term')
-      ->loadByProperties(['name' => $term_name]);
+      ->loadByProperties(['name' => $term_name, 'vid' => 'status']);
     $term = array_pop($terms);
     if ($term) {
       $this->set('revision_status', $term->id());

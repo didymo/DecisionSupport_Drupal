@@ -155,7 +155,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     $reportData['steps'] = $stepsData;
     $reportData['reportLabel'] = $decisionSupport->getName();
     $reportData['processLabel'] = $decisionSupport->getProcessLabel();
-    $reportData['submittedTime'] = $decisionSupport->getupdatedTime();
+    $reportData['submittedTime'] = $decisionSupport->getUpdatedTime();
 
     $reportJson = json_encode($reportData);
 

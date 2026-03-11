@@ -150,7 +150,7 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
       ->setRevisionable(TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
-        'type' => 'author',
+        'type' => 'entity_reference_label',
         'weight' => 0,
       ])
       ->setDisplayOptions('form', [
@@ -292,7 +292,7 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
   /**
    * {@inheritdoc}
    */
-  protected function urlRouteParameters($rel) {
+  protected function urlRouteParameters($rel): array {
     $uri_route_parameters = parent::urlRouteParameters($rel);
 
     if ($rel === 'revision_revert' && $this instanceof RevisionableInterface) {

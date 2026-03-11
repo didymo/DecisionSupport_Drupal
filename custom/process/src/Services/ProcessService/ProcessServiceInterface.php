@@ -10,10 +10,10 @@ namespace Drupal\process\Services\ProcessService;
 interface ProcessServiceInterface {
 
   /**
-   * Loads an Process entity.
+   * Returns a list of active Process entities.
    *
-   * @return \Drupal\process\Entity\Process|null
-   *   The Process entity, or NULL if not found.
+   * @return array
+   *   An array of process data arrays.
    */
   public function getProcessList();
 

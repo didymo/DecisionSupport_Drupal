@@ -74,7 +74,8 @@ final class ProcessService implements ProcessServiceInterface {
    */
   public function getProcess($processId) {
 
-    $process = Process::load($processId);
+    /** @var \Drupal\process\Entity\Process|null $process */
+    $process = $this->entityTypeManager->getStorage('process')->load($processId);
 
     if (!$process) {
       throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
@@ -151,7 +152,8 @@ final class ProcessService implements ProcessServiceInterface {
    * {@inheritdoc}
    */
   public function patchProcess($processId, array $data) {
-    $process = Process::load($processId);
+    /** @var \Drupal\process\Entity\Process|null $process */
+    $process = $this->entityTypeManager->getStorage('process')->load($processId);
 
     if (!$process) {
       throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
@@ -174,7 +176,8 @@ final class ProcessService implements ProcessServiceInterface {
    * {@inheritdoc}
    */
   public function updateProcess($processId, array $data) {
-    $process = Process::load($processId);
+    /** @var \Drupal\process\Entity\Process|null $process */
+    $process = $this->entityTypeManager->getStorage('process')->load($processId);
 
     if (!$process) {
       throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
@@ -197,7 +200,8 @@ final class ProcessService implements ProcessServiceInterface {
    */
   public function deleteProcess($processId) {
 
-    $process = Process::load($processId);
+    /** @var \Drupal\process\Entity\Process|null $process */
+    $process = $this->entityTypeManager->getStorage('process')->load($processId);
     if (!$process) {
       throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
     }

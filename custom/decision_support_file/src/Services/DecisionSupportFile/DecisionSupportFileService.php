@@ -69,7 +69,7 @@ final class DecisionSupportFileService implements DecisionSupportFileServiceInte
       'id' => $decisionSupportId,
       'file_ids' => json_encode($decisionSupportFileIds),
     ]);
-    $unformattedDecisionSupportFile = DecisionSupportFile::loadMultiple($decisionSupportFileIds);
+    $unformattedDecisionSupportFile = $this->entityTypeManager->getStorage('decision_support_file')->loadMultiple($decisionSupportFileIds);
     $decisionSupportFileList = [];
 
     foreach ($unformattedDecisionSupportFile as $unformattedDecisionSupportFile) {
@@ -129,7 +129,8 @@ final class DecisionSupportFileService implements DecisionSupportFileServiceInte
    */
   public function deleteDecisionSupportFile($fileId) {
 
-    $decisionSupportFile = DecisionSupportFile::load($fileId);
+    /** @var \Drupal\decision_support_file\Entity\DecisionSupportFile|null $decisionSupportFile */
+    $decisionSupportFile = $this->entityTypeManager->getStorage('decision_support_file')->load($fileId);
 
     if (!$decisionSupportFile) {
       throw new NotFoundHttpException();

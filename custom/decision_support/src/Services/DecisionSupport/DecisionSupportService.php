@@ -6,7 +6,6 @@ namespace Drupal\decision_support\Services\DecisionSupport;
 
 use Drupal\decision_support\Entity\DecisionSupport;
 use Drupal\decision_support_file\Services\DecisionSupportFile\DecisionSupportFileServiceInterface;
-use Drupal\process\Entity\Process;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -111,7 +110,8 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
    */
   public function getDecisionSupportReport($decisionSupportId) {
 
-    $decisionSupport = DecisionSupport::load($decisionSupportId);
+    /** @var \Drupal\decision_support\Entity\DecisionSupport|null $decisionSupport */
+    $decisionSupport = $this->entityTypeManager->getStorage('decision_support_entity')->load($decisionSupportId);
     if (!$decisionSupport) {
       throw new NotFoundHttpException(sprintf('DecisionSupport with ID %s was not found.', $decisionSupportId));
     }
@@ -168,7 +168,8 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
    */
   public function getDecisionSupport($decisionSupportId) {
 
-    $decisionSupport = DecisionSupport::load($decisionSupportId);
+    /** @var \Drupal\decision_support\Entity\DecisionSupport|null $decisionSupport */
+    $decisionSupport = $this->entityTypeManager->getStorage('decision_support_entity')->load($decisionSupportId);
     if (!$decisionSupport) {
       throw new NotFoundHttpException(sprintf('DecisionSupport with ID %s was not found.', $decisionSupportId));
     }
@@ -186,7 +187,8 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     }
 
     $processId = $data['process_id'];
-    $process = Process::load($processId);
+    /** @var \Drupal\process\Entity\Process|null $process */
+    $process = $this->entityTypeManager->getStorage('process')->load($processId);
     if (!$process) {
       throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
     }
@@ -222,7 +224,8 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
    * {@inheritdoc}
    */
   public function updateDecisionSupport($decisionSupportId, array $data) {
-    $decisionSupport = DecisionSupport::load($decisionSupportId);
+    /** @var \Drupal\decision_support\Entity\DecisionSupport|null $decisionSupport */
+    $decisionSupport = $this->entityTypeManager->getStorage('decision_support_entity')->load($decisionSupportId);
 
     if (!$decisionSupport) {
       throw new NotFoundHttpException(sprintf('DecisionSupport with ID %s was not found.', $decisionSupportId));
@@ -244,7 +247,8 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
    */
   public function archiveDecisionSupport($decisionSupportId) {
 
-    $decisionSupport = DecisionSupport::load($decisionSupportId);
+    /** @var \Drupal\decision_support\Entity\DecisionSupport|null $decisionSupport */
+    $decisionSupport = $this->entityTypeManager->getStorage('decision_support_entity')->load($decisionSupportId);
     if (!$decisionSupport) {
       throw new NotFoundHttpException(sprintf('DecisionSupport with ID %s was not found.', $decisionSupportId));
     }

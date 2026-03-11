@@ -150,7 +150,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
       ->setRevisionable(TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
-        'type' => 'author',
+        'type' => 'entity_reference_label',
         'weight' => 0,
       ])
       ->setDisplayOptions('form', [
@@ -281,7 +281,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
   /**
    * {@inheritdoc}
    */
-  protected function urlRouteParameters($rel) {
+  protected function urlRouteParameters($rel): array {
     $uri_route_parameters = parent::urlRouteParameters($rel);
 
     if ($rel === 'revision_revert' && $this instanceof RevisionableInterface) {

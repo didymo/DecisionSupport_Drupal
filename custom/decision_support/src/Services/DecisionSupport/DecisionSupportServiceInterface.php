@@ -10,43 +10,40 @@ namespace Drupal\decision_support\Services\DecisionSupport;
 interface DecisionSupportServiceInterface {
 
   /**
-   * Loads a DecisionSupport entity.
+   * Returns a list of in-progress DecisionSupport entities.
    *
-   * @return \Drupal\decision_support\Entity\DecisionSupport|null
-   *   The DecisionSupport entity, or NULL if not found.
+   * @return array
+   *   An array of decision support data arrays.
    */
   public function getDecisionSupportList();
 
   /**
-   * Get a DecisionSupport by ID.
+   * Returns a list of completed DecisionSupport entities.
    *
-   * @param int $decisionSupportId
-   *   The ID of the decisionSupport entity to retrieve.
-   *
-   * @return string
-   *   The JSON representation of the DecisionSupport entity.
+   * @return array
+   *   An array of decision support report data arrays.
    */
   public function getDecisionSupportReportList();
 
   /**
-   * Get a DecisionSupport by ID.
+   * Get a DecisionSupport JSON string by ID.
    *
-   * @param int $decisionSupportReportId
-   *   The ID of the decisionSupport entity to retrieve.
+   * @param int $decisionSupportId
+   *   The ID of the decision support entity to retrieve.
    *
    * @return string
-   *   The JSON representation of the DecisionSupport entity.
+   *   The JSON string of the DecisionSupport entity.
    */
   public function getDecisionSupport($decisionSupportId);
 
   /**
-   * Creates a new DecisionSupport entity.
+   * Get a formatted DecisionSupport report by ID.
    *
-   * @param array $data
-   *   The data for the new entity.
+   * @param int $decisionSupportId
+   *   The ID of the decision support entity to retrieve.
    *
-   * @return \Drupal\decision_support\Entity\DecisionSupport
-   *   The created DecisionSupport entity.
+   * @return string
+   *   The JSON-encoded report data.
    */
   public function getDecisionSupportReport($decisionSupportId);
 

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\decision_support\Plugin\rest\resource;
 
-use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
-use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Psr\Log\LoggerInterface;
@@ -14,7 +12,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\decision_support\Services\DecisionSupport\DecisionSupportService;
+use Drupal\decision_support\Services\DecisionSupport\DecisionSupportServiceInterface;
 
 /**
  * Represents Decision Support Archive records as resources.
@@ -27,35 +25,8 @@ use Drupal\decision_support\Services\DecisionSupport\DecisionSupportService;
  *     "delete" = "/rest/support/archive/{decisionSupportId}"
  *   }
  * )
- *
- * @DCG
- * The plugin exposes key-value records as REST resources. In order to enable it
- * import the resource configuration into active configuration storage. An
- * example of such configuration can be located in the following file:
- * core/modules/rest/config/optional/rest.resource.entity.node.yml.
- * Alternatively, you can enable it through admin interface provider by REST UI
- * module.
- * @see https://www.drupal.org/project/restui
- *
- * @DCG
- * Notice that this plugin does not provide any validation for the data.
- * Consider creating custom normalizer to validate and normalize the incoming
- * data. It can be enabled in the plugin definition as follows.
- * @code
- *   serialization_class = "Drupal\foo\MyDataStructure",
- * @endcode
- *
- * @DCG
- * For entities, it is recommended to use REST resource plugin provided by
- * Drupal core.
- * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
 final class ArchiveDecisionSupportResource extends ResourceBase {
-
-  /**
-   * The key-value storage.
-   */
-  private readonly KeyValueStoreInterface $storage;
 
   /**
    * The current user.
@@ -65,7 +36,7 @@ final class ArchiveDecisionSupportResource extends ResourceBase {
   /**
    * The decision support service.
    */
-  private DecisionSupportService $decisionSupportService;
+  private DecisionSupportServiceInterface $decisionSupportService;
 
   /**
    * {@inheritdoc}
@@ -76,12 +47,10 @@ final class ArchiveDecisionSupportResource extends ResourceBase {
     $plugin_definition,
     array $serializer_formats,
     LoggerInterface $logger,
-    KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface $currentUser,
-    DecisionSupportService $decision_support_service,
+    DecisionSupportServiceInterface $decision_support_service,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('archive_decision_support');
     $this->currentUser = $currentUser;
     $this->decisionSupportService = $decision_support_service;
   }
@@ -96,7 +65,6 @@ final class ArchiveDecisionSupportResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
-      $container->get('keyvalue'),
       $container->get('current_user'),
       $container->get('decision_support.service')
     );

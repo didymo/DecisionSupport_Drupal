@@ -80,13 +80,11 @@ final class ProcessService implements ProcessServiceInterface {
     if (!$process) {
       throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
     }
-    if ($process->getStatus()) {
-      $processJsonString = $process->getJsonString();
+    if (!$process->getStatus()) {
+      throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
     }
-    else {
-      $processJsonString = '';
-    }
-    return $processJsonString;
+
+    return $process->getJsonString();
   }
 
   /**

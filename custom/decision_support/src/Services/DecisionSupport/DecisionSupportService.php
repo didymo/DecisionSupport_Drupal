@@ -236,7 +236,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     $json_string = json_encode($data);
     $decisionSupport->setJsonString($json_string);
     $decisionSupport->setName($data['decisionSupportLabel']);
-    $decisionSupport->setIsCompleted($data['isCompleted']);
+    $decisionSupport->setIsCompleted((bool) $data['isCompleted']);
     $decisionSupport->save();
 
     return $decisionSupport;

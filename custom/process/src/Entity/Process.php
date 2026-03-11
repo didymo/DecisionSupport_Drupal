@@ -108,7 +108,6 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
       ->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 50,
-        'text_processing' => 0,
       ])
       ->setDefaultValue('')
       ->setDisplayOptions('view', [
@@ -134,7 +133,6 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
       ->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 50,
-        'text_processing' => 0,
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
@@ -201,7 +199,6 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
       ->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 50,
-        'text_processing' => 0,
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);

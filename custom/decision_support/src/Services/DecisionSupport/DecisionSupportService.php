@@ -52,23 +52,27 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
    */
   public function getDecisionSupportList() {
 
-    $unformattedDecisionSupport = DecisionSupport::loadMultiple();
-    $decisionSupportList = [];
-    foreach ($unformattedDecisionSupport as $unformattedDecisionSupport) {
-      if ($unformattedDecisionSupport instanceof DecisionSupport) {
-        if (!$unformattedDecisionSupport->getIsCompleted()) {
-          $decisionSupport['label'] = $unformattedDecisionSupport->getName();
-          $decisionSupport['entityId'] = $unformattedDecisionSupport->id();
-          $decisionSupport['revisionId'] = $unformattedDecisionSupport->getRevisionId();
-          $decisionSupport['createdTime'] = $unformattedDecisionSupport->getCreatedTime();
-          $decisionSupport['updatedTime'] = $unformattedDecisionSupport->getupdatedTime();
-          $decisionSupport['revisionStatus'] = $unformattedDecisionSupport->getRevisionStatus();
-          $decisionSupport['processLabel'] = $unformattedDecisionSupport->getProcessLabel();
-          $decisionSupport['isCompleted'] = $unformattedDecisionSupport->getIsCompleted();
-          $decisionSupport['json_string'] = $unformattedDecisionSupport->getJsonString();
+    $ids = $this->entityTypeManager
+      ->getStorage('decision_support_entity')
+      ->getQuery()
+      ->condition('completed', 0)
+      ->accessCheck(TRUE)
+      ->execute();
 
-          $decisionSupportList[] = $decisionSupport;
-        }
+    $decisionSupportList = [];
+    foreach ($this->entityTypeManager->getStorage('decision_support_entity')->loadMultiple($ids) as $entity) {
+      if ($entity instanceof DecisionSupport) {
+        $decisionSupport['label'] = $entity->getName();
+        $decisionSupport['entityId'] = $entity->id();
+        $decisionSupport['revisionId'] = $entity->getRevisionId();
+        $decisionSupport['createdTime'] = $entity->getCreatedTime();
+        $decisionSupport['updatedTime'] = $entity->getUpdatedTime();
+        $decisionSupport['revisionStatus'] = $entity->getRevisionStatus();
+        $decisionSupport['processLabel'] = $entity->getProcessLabel();
+        $decisionSupport['isCompleted'] = $entity->getIsCompleted();
+        $decisionSupport['json_string'] = $entity->getJsonString();
+
+        $decisionSupportList[] = $decisionSupport;
       }
     }
 
@@ -79,18 +83,23 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
    * {@inheritdoc}
    */
   public function getDecisionSupportReportList() {
-    $unformattedDecisionSupportReport = DecisionSupport::loadMultiple();
-    $decisionSupportReportList = [];
-    foreach ($unformattedDecisionSupportReport as $unformattedDecisionSupportReport) {
-      if ($unformattedDecisionSupportReport instanceof DecisionSupport) {
-        if ($unformattedDecisionSupportReport->getIsCompleted()) {
-          $decisionSupportReport['label'] = $unformattedDecisionSupportReport->getName();
-          $decisionSupportReport['entityId'] = $unformattedDecisionSupportReport->id();
-          $decisionSupportReport['submittedTime'] = $unformattedDecisionSupportReport->getupdatedTime();
-          $decisionSupportReport['processLabel'] = $unformattedDecisionSupportReport->getProcessLabel();
 
-          $decisionSupportReportList[] = $decisionSupportReport;
-        }
+    $ids = $this->entityTypeManager
+      ->getStorage('decision_support_entity')
+      ->getQuery()
+      ->condition('completed', 1)
+      ->accessCheck(TRUE)
+      ->execute();
+
+    $decisionSupportReportList = [];
+    foreach ($this->entityTypeManager->getStorage('decision_support_entity')->loadMultiple($ids) as $entity) {
+      if ($entity instanceof DecisionSupport) {
+        $decisionSupportReport['label'] = $entity->getName();
+        $decisionSupportReport['entityId'] = $entity->id();
+        $decisionSupportReport['submittedTime'] = $entity->getUpdatedTime();
+        $decisionSupportReport['processLabel'] = $entity->getProcessLabel();
+
+        $decisionSupportReportList[] = $decisionSupportReport;
       }
     }
 
@@ -113,6 +122,9 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
       throw new BadRequestHttpException('Decision support report data is malformed');
     }
 
+    // Fetch all files for this decision support once, outside the loop.
+    $files = $this->decisionSupportFileService->getDecisionSupportFile($decisionSupportId);
+
     $reportData = [];
     $stepsData = [];
     foreach ($jsonData['steps'] as $step) {
@@ -122,8 +134,6 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
         'answerLabel' => $step['answerLabel'] ?? '',
         'textAnswer' => strip_tags($step['textAnswer'] ?? ''),
       ];
-      // Fetch DecisionSupportFile entities for the step (by stepId).
-      $files = $this->decisionSupportFileService->getDecisionSupportFile($decisionSupportId);
 
       // Filter the files to match the current step.
       $stepFiles = array_filter($files, function ($file) use ($step) {

@@ -42,23 +42,27 @@ final class ProcessService implements ProcessServiceInterface {
    */
   public function getProcessList() {
 
-    $unformattedProcesses = Process::loadMultiple();
-    $processList = [];
-    foreach ($unformattedProcesses as $unformattedProcess) {
-      if ($unformattedProcess instanceof Process) {
-        if ($unformattedProcess->getStatus()) {
-          $process['label'] = $unformattedProcess->getLabel();
-          $process['entityId'] = $unformattedProcess->id();
-          $process['revisionId'] = $unformattedProcess->getRevisionId();
-          $process['revisionCreationTime'] = $unformattedProcess->getRevisionCreationTime();
-          $process['createdTime'] = $unformattedProcess->getCreatedTime();
-          $process['updatedTime'] = $unformattedProcess->getupdatedTime();
-          $process['revisionStatus'] = $unformattedProcess->getRevisionStatus();
-          $process['enabled'] = $unformattedProcess->getStatus();
-          $process['json_string'] = $unformattedProcess->getJsonString();
+    $ids = $this->entityTypeManager
+      ->getStorage('process')
+      ->getQuery()
+      ->condition('status', 1)
+      ->accessCheck(TRUE)
+      ->execute();
 
-          $processList[] = $process;
-        }
+    $processList = [];
+    foreach ($this->entityTypeManager->getStorage('process')->loadMultiple($ids) as $entity) {
+      if ($entity instanceof Process) {
+        $process['label'] = $entity->getLabel();
+        $process['entityId'] = $entity->id();
+        $process['revisionId'] = $entity->getRevisionId();
+        $process['revisionCreationTime'] = $entity->getRevisionCreationTime();
+        $process['createdTime'] = $entity->getCreatedTime();
+        $process['updatedTime'] = $entity->getUpdatedTime();
+        $process['revisionStatus'] = $entity->getRevisionStatus();
+        $process['enabled'] = $entity->getStatus();
+        $process['json_string'] = $entity->getJsonString();
+
+        $processList[] = $process;
       }
     }
 

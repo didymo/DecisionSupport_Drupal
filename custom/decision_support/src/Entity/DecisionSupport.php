@@ -108,7 +108,6 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
       ->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 50,
-        'text_processing' => 0,
       ])
       ->setDefaultValue('')
       ->setDisplayOptions('view', [
@@ -134,7 +133,6 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
       ->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 50,
-        'text_processing' => 0,
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
@@ -211,7 +209,6 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
       ->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 50,
-        'text_processing' => 0,
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);

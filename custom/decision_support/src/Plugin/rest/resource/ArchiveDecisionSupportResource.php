@@ -90,8 +90,9 @@ final class ArchiveDecisionSupportResource extends ResourceBase {
 
     try {
       // Archive the decision support entity.
-      $this->decisionSupportService->archiveDecisionSupport($decisionSupportId);
-      return new ModifiedResourceResponse(NULL, 204);
+      $entity = $this->decisionSupportService->archiveDecisionSupport($decisionSupportId);
+      $this->logger->notice('The DecisionSupport @id has been moved to Archived.', ['@id' => $decisionSupportId]);
+      return new ModifiedResourceResponse($entity, 200);
     }
     catch (HttpExceptionInterface $e) {
       throw $e;

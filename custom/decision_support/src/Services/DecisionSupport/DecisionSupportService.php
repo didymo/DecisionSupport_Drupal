@@ -253,10 +253,15 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
       throw new NotFoundHttpException(sprintf('DecisionSupport with ID %s was not found.', $decisionSupportId));
     }
 
-    $decisionSupport->delete();
+    $label = $decisionSupport->getName();
+    $decisionSupport->setName('Archived - ' . $label);
+    $decisionSupport->set('status', FALSE);
+    $decisionSupport->setRevisionStatus('Archived');
+    $decisionSupport->save();
 
     $this->logger->notice('Moved DecisionSupport with ID @id to archived.', ['@id' => $decisionSupportId]);
 
+    return $decisionSupport;
   }
 
 }

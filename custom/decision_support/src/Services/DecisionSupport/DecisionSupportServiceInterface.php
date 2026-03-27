@@ -73,10 +73,17 @@ interface DecisionSupportServiceInterface {
   public function updateDecisionSupport($decisionSupportId, array $data);
 
   /**
-   * Move a existing DecisionSupport entity to archived.
+   * Move an existing DecisionSupport entity to archived.
+   *
+   * Renames the label, unpublishes the entity, and sets revision status to
+   * Archived. The entity is preserved in the database and remains visible to
+   * administrators via the Drupal admin UI.
    *
    * @param $decisionSupportId
    *   The id of the existing entity.
+   *
+   * @return \Drupal\decision_support\DecisionSupportInterface
+   *   The archived entity.
    */
   public function archiveDecisionSupport($decisionSupportId);
 

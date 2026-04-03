@@ -34,7 +34,7 @@ interface DecisionSupportFileServiceInterface {
   /**
    * Move a existing DecisionSupportFile entity to archived.
    *
-   * @param $fileId
+   * @param int $fileId
    *   The id of the existing entity.
    */
   public function deleteDecisionSupportFile($fileId);

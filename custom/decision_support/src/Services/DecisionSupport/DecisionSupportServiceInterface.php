@@ -61,11 +61,10 @@ interface DecisionSupportServiceInterface {
   /**
    * Updates a DecisionSupport entity.
    *
+   * @param int $decisionSupportId
+   *   The id of the existing entity.
    * @param array $data
    *   The data of the entity.
-   *
-   * @param $decisionSupportId
-   *   The id of the existing entity.
    *
    * @return \Drupal\decision_support\Entity\DecisionSupport
    *   The updated DecisionSupport entity.
@@ -79,7 +78,7 @@ interface DecisionSupportServiceInterface {
    * Archived. The entity is preserved in the database and remains visible to
    * administrators via the Drupal admin UI.
    *
-   * @param $decisionSupportId
+   * @param int $decisionSupportId
    *   The id of the existing entity.
    *
    * @return \Drupal\decision_support\DecisionSupportInterface

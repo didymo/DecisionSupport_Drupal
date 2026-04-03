@@ -39,3 +39,5 @@
 # Ignore the conf directory
 #
 ./conf
+
+backups/

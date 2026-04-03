@@ -53,11 +53,10 @@ interface ProcessServiceInterface {
   /**
    * Updates a Process entity.
    *
+   * @param int $processId
+   *   The id of the existing entity.
    * @param array $data
    *   The data of the entity.
-   *
-   * @param $processId
-   *   The id of the existing entity.
    *
    * @return \Drupal\process\Entity\Process
    *   The updated Process entity.
@@ -67,11 +66,10 @@ interface ProcessServiceInterface {
   /**
    * Updates a Process Json String.
    *
+   * @param int $processId
+   *   The id of the existing entity.
    * @param array $data
    *   The data of the entity.
-   *
-   * @param $processId
-   *   The id of the existing entity.
    *
    * @return \Drupal\process\Entity\Process
    *   The updated Process entity.
@@ -81,7 +79,7 @@ interface ProcessServiceInterface {
   /**
    * Move a existing Process entity to archived.
    *
-   * @param $processId
+   * @param int $processId
    *   The id of the existing entity.
    */
   public function deleteProcess($processId);
